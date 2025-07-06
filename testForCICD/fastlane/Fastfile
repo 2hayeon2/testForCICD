@@ -1,0 +1,77 @@
+default_platform(:ios)
+
+platform :ios do
+
+  PROJECT_NAME = "testForCICD"
+
+  desc "Build, test, lint, and increment build number"
+  lane :full_ci do
+    begin
+      UI.message "👉 [1/4] Running SwiftLint..."
+      sh("swiftlint")
+
+      UI.message "👉 [2/4] Running tests..."
+      run_tests
+
+      UI.message "👉 [3/4] Incrementing build number..."
+      increment_build_number
+
+      UI.message "👉 [4/4] Building the app..."
+      build_app(
+        scheme: PROJECT_NAME,
+        skip_package_ipa: true,
+        skip_profile_detection: true,
+        export_method: "development",
+        silent: true
+      )
+
+      slack(message: "✅ full_ci succeeded 🎉", success: true)
+    rescue => error
+      slack(message: "❌ full_ci failed: #{error}", success: false)
+      raise error
+    end
+  end
+
+  desc "Build the app only"
+  lane :build do
+    begin
+      UI.message "🚧 Building the app..."
+      build_app(
+        scheme: PROJECT_NAME,
+        skip_package_ipa: true,
+        skip_profile_detection: true,
+        export_method: "development",
+        silent: true
+      )
+      slack(message: "✅ build succeeded", success: true)
+    rescue => error
+      slack(message: "❌ build failed: #{error}", success: false)
+      raise error
+    end
+  end
+
+  desc "Run tests"
+  lane :test do
+    begin
+      UI.message "✅ Running tests..."
+      run_tests
+      slack(message: "✅ test succeeded", success: true)
+    rescue => error
+      slack(message: "❌ test failed: #{error}", success: false)
+      raise error
+    end
+  end
+
+  desc "Run SwiftLint"
+  lane :lint do
+    begin
+      UI.message "🧹 Running SwiftLint..."
+      sh("swiftlint")
+      slack(message: "✅ lint succeeded", success: true)
+    rescue => error
+      slack(message: "❌ lint failed: #{error}", success: false)
+      raise error
+    end
+  end
+
+end
