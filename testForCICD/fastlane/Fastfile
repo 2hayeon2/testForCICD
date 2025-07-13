@@ -43,9 +43,9 @@ platform :ios do
         export_method: "development",
         silent: true
       )
-      slack(message: "✅ build succeeded", success: true)
+      slack(message: "<@U094WVCE533> ✅ build succeeded", success: true)
     rescue => error
-      slack(message: "❌ build failed: #{error}", success: false)
+      slack(message: "<@U094WVCE533> ❌ build failed: #{error}", success: false)
       raise error
     end
   end
